@@ -7,19 +7,19 @@
 #include <termios.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <errno.h>
 
 
 #include <osdp-discovery.h>
 #if 0
-#include <fcntl.h>
 #include <sys/types.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <time.h>
-#include <errno.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <termios.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #endif
@@ -199,6 +199,52 @@ void dump_osdp_message
 } /* dump_osdp_message */
 
 
+int initialize_serial_port
+  (OSDP_DISCOVERY_CONTEXT *ctx)
+
+{ /* initialize_serial_port */
+
+  int serial_speed_cfg_value;
+  int status;
+  int status_io;
+
+  status = ST_OK;
+
+  ctx->fd = open (ctx->device, O_RDWR | O_NONBLOCK);
+  if (ctx->verbosity > 3)
+    fprintf (stdout, "Opening %s, fd=%d.\n", ctx->device, ctx->fd);
+  if (ctx->fd EQUALS -1)
+  {
+    if (ctx->verbosity > 3)
+      fprintf (stderr, "errno at device %s open %d\n", ctx->device, errno);
+    status= ST_DISCOVERY_SERIAL_OPEN_ERR;
+  }
+  if (status EQUALS ST_OK)
+  {
+    status_io = tcgetattr (ctx->fd, &(ctx->tio));
+    cfmakeraw (&(ctx->tio));
+    status_io = tcsetattr (ctx->fd, TCSANOW, &(ctx->tio));
+  };
+  if (status EQUALS ST_OK)
+  {
+    serial_speed_cfg_value = B9600;
+    if (0 EQUALS strcmp(ctx->speed_s, "115200"))
+      serial_speed_cfg_value = B115200;
+    fprintf(stderr, "Speed is %s\n", ctx->speed_s);
+    status_io = cfsetispeed (&(ctx->tio), serial_speed_cfg_value);
+    if (status_io EQUALS 0)
+      status_io = cfsetospeed (&(ctx->tio), serial_speed_cfg_value);
+    if (status_io EQUALS 0)
+      status_io = tcsetattr (ctx->fd, TCSANOW, &(ctx->tio));
+    if (status_io != 0)
+      status = ST_DISCOVERY_SERIAL_SET_ERR;
+  };
+
+  return(status);
+
+} /* initialize_serial_port */
+
+
 int length_valid
   (OSDP_DISCOVERY_CONTEXT *ctx,
   OSDP_MESSAGE *msg,
@@ -235,4 +281,53 @@ unsigned char osdp_discovery_response
   return(returned_response_code);
 }
 
+/*
+  read_settings - reads settings values from json file
+
+  settings file name is discovery-settings.json, located in current directory.
+
+  parameters:
+    device - serial device to use
+    speed - serial device speed
+    verbosity - message detail level.  default is 3, debug is 9, silent is 0
+*/
+int read_settings
+  (OSDP_DISCOVERY_CONTEXT *ctx)
+
+{ /* read_settings */
+
+  int i;
+  json_t *root;
+  int status;
+  json_error_t status_json;
+  json_t *value;
+
+
+  status = ST_OK;
+  root = json_load_file(DISCOVERY_SETTINGS_FILENAME, 0, &status_json);
+  if (root != NULL)
+  {
+    value = json_object_get (root, "verbosity");
+    if (json_is_string (value))
+    {
+      sscanf(json_string_value(value), "%d", &i);
+      ctx->verbosity = i;
+    };
+    if (ctx->verbosity > 3)
+      fprintf(stderr, "reading settings from %s\n", DISCOVERY_SETTINGS_FILENAME);
+    value = json_object_get (root, "device");
+    if (json_is_string (value))
+    {
+      strcpy(ctx->device, json_string_value(value));
+    };
+    value = json_object_get (root, "speed");
+    if (json_is_string (value))
+    {
+      strcpy(ctx->speed_s, json_string_value(value));
+    };
+  };
+
+  return(status);
+
+} /* read_settings */
 

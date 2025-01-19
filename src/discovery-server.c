@@ -37,6 +37,14 @@ int main
     done = 1;
   if (status EQUALS ST_OK)
   {
+
+zzz send initial discovery
+zzz watch the input.  if anything (check stats) then bail
+zzz send the discover command
+zzz if response do something with it
+zzz do set command
+zzz check for ack
+
     while (!done)
     {
       if (status EQUALS ST_OK)

@@ -11,6 +11,9 @@
 #endif
 
 
+#define DISCOVERY_SETTINGS_FILENAME "discovery-settings.json"
+
+
 typedef struct __attribute__((packed)) osdp_message
 {
   unsigned char msg_start;
@@ -57,4 +60,6 @@ int read_settings(OSDP_DISCOVERY_CONTEXT *ctx);
 #define ST_DISCOVERY_UNK_PD_MSG   ( 6)
 #define ST_DISCOVERY_LTH_ERR      ( 7)
 #define ST_DISCOVERY_HDR_LTH      ( 8)
+#define ST_DISCOVERY_SERIAL_OPEN_ERR ( 9)
+#define ST_DISCOVERY_SERIAL_SET_ERR  (10)
 
