@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdir -p /opt/tester/log
+echo >>/opt/tester/log/install.log OV103 preinst executed.
+

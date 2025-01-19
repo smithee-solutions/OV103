@@ -97,3 +97,64 @@ int initialize
 
 } /* initialize */
 
+
+int process_input_message
+  (OSDP_DISCOVERY_CONTEXT *ctx)
+
+{ /* process_input_message */
+
+  unsigned short int calc_crc;
+  int length;
+  OSDP_MESSAGE *osdp_msg;
+  unsigned char *p;
+  int status;
+  unsigned short int wire_crc;
+#if 0
+  Z9IO_BOARD_INFO *board_info;
+  Z9IO_BOARD_STATUS *board_status;
+  Z9IO_RAW_READ_MESSAGE *cardread;
+  Z9IO_ENCRYPTION_KEY_EXCHANGE *enc_kex;
+  int i;
+  unsigned char msg_sent [1024];
+#endif
+
+
+  status = ST_OK;
+  osdp_msg = (OSDP_MESSAGE *)(ctx->buffer);
+  length = ctx->buf_idx;
+  if (ctx->verbosity > 3)
+  {
+    fprintf(stdout, "Discovery Server input received %d octets\n", length);
+  };
+  dump_osdp_message(ctx, osdp_msg, length, "PD->ACU");
+
+  if (length_valid(ctx, osdp_msg, length) != ST_OK)
+    status = ST_DISCOVERY_LENGTH;
+  if (status EQUALS ST_OK)
+  {
+    p = (unsigned char *)osdp_msg;
+    p = p + length - 2;
+    calc_crc = fCrcBlk((unsigned char *)osdp_msg, length-2);
+    wire_crc = *(unsigned short int *)p;
+    if (calc_crc != wire_crc)
+      status = ST_DISCOVERY_BAD_CRC;
+  };
+  if (status EQUALS ST_OK)
+  {
+    switch(osdp_discovery_response(osdp_msg))
+    {
+    default:
+      status = ST_DISCOVERY_UNK_PD_MSG;
+      if (ctx->verbosity > 3)
+        fprintf(stdout, "Unknown response %02X received.\n", osdp_msg->command);
+      break;
+    };
+  };
+  if (status EQUALS ST_OK)
+  {
+    ctx->buf_idx = 0;
+  };
+  return(status);
+
+} /* process_input_message */
+

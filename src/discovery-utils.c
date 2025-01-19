@@ -161,3 +161,78 @@ int check_serial_input
 
 } /* check_serial_input */
 
+
+/*
+  dump_osdp_message - dumps the message in text and hex.
+
+  only dumps hex at verbosity 4 or higher.
+*/
+void dump_osdp_message
+  (OSDP_DISCOVERY_CONTEXT *ctx,
+  OSDP_MESSAGE *msg, 
+  int lth,
+  char *dir_tag)
+
+{ /* dump_osdp_message */
+
+  int i;
+  unsigned char *msg_raw;
+
+
+  msg_raw = (unsigned char *)msg;
+  fprintf(stderr, "%s ", dir_tag);
+  fprintf(stderr,
+"SOM=%02X Lth=%3d. A%d CTL=%02X CMD %02X CRC %02X%02X\n",
+    msg->msg_start, 256*(msg->lth_hi) + msg->lth_lo, msg->address, msg->control, msg->command,
+    *(msg_raw + lth - 2), *(msg_raw + lth - 1));
+  if (ctx->verbosity > 3)
+  {
+    for (i=0; i<lth; i++)
+    {
+      fprintf(stderr, "%02X", *(msg_raw +i));
+      if ((15 EQUALS (i % 16)) && ((lth % 16) != 0))
+        fprintf(stderr, "\n");
+    };
+    fprintf(stderr, "\n");
+  };
+
+} /* dump_osdp_message */
+
+
+int length_valid
+  (OSDP_DISCOVERY_CONTEXT *ctx,
+  OSDP_MESSAGE *msg,
+  int length_in_buffer)
+{
+  int length_in_header;
+  int status;
+
+
+  status = ST_OK;
+  length_in_header = 256*msg->lth_hi + msg->lth_lo;
+  if (ctx->verbosity > 9)
+    fprintf(stderr, "Lth: hdr %d actual %d\n", length_in_header, length_in_buffer);
+    
+  if (length_in_header != length_in_buffer)
+    status = ST_DISCOVERY_HDR_LTH;
+  if (status EQUALS ST_OK)
+  {
+    if ((length_in_header < OSDP_MIN_MESSAGE_SIZE) || (length_in_header > OSDP_MAX_MESSAGE_SIZE))
+      status = ST_DISCOVERY_LTH_ERR;
+  };
+  return(status);
+
+} /* length_valid */
+
+
+unsigned char osdp_discovery_response
+  (OSDP_MESSAGE *msg)
+{
+  unsigned char returned_response_code;
+
+  returned_response_code = 0x00;
+// pluck response code from mfgrep
+  return(returned_response_code);
+}
+
+

@@ -2,6 +2,7 @@
   (C)2025 Smithee Solutions LLC
 */
 
+#define OSDP_MIN_MESSAGE_SIZE (1+1+2+1+1) // SOM, Addr, Lth(2), CTL, CMD
 #define OSDP_MAX_MESSAGE_SIZE (1440)
 
 #define OSDP_MESSAGE_START (0x53) // SOM

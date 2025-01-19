@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir -p /opt/tester/log
+usermod --groups sudo,dialout opsadmin1
+
+echo >>/opt/tester/log/OV103_install.log OSDP discovery tools installed.
+

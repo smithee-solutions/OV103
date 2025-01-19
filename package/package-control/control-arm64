@@ -1,0 +1,10 @@
+Package: OV103
+Version: 0.00
+Section: custom
+Priority: optional
+Architecture: arm64
+Essential: no
+Installed-Size: 1024
+Maintainer: github@smithee.solutions
+Description: OSDP discovery tools
+
