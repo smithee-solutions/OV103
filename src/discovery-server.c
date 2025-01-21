@@ -16,6 +16,7 @@
 int initialize(OSDP_DISCOVERY_CONTEXT *ctx);
 
 unsigned char my_OUI [] = {0x0A, 0x00, 0x17};
+DISCOVERY_TIMER TIMER_DISCOVER_WAIT = {1600L}; // milliseconds i.e. 8x poll time
 
 
 int main
@@ -24,7 +25,7 @@ int main
 
 { /* main for discovery-server */
 
-  DISCOVERY_TIMER current_time;
+  DISCOVERY_TIMER current_timer;
   OSDP_DISCOVERY_CONTEXT discovery_context;
   OSDP_DISCOVERY_CONTEXT *ctx;
   int done;
@@ -39,40 +40,39 @@ int main
   status = initialize(ctx);
   if (status != ST_OK)
     done = 1;
+
+
+  // send 'start discover' and confirm nobody answers.
+  if (status EQUALS ST_OK)
+    status = setup_osdp_mfg_message(ctx, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
+
+  if (status EQUALS ST_OK)
+    status = start_discovery_timer(ctx, &current_timer);
   if (status EQUALS ST_OK)
   {
-    // send 'start discover' and confirm nobody answers.
-
-    status = setup_osdp_mfg_message(ctx, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
-    if (status EQUALS ST_OK)
+    done = 0;
+    while (!done)
     {
-      status = start_discovery_timer(ctx, &current_time);
+      status = check_serial_input(ctx);
+      if ((status EQUALS ST_DISCOVERY_WHOLE_PACKET) ||
+        (ctx->buf_idx > 0) || (ctx->spill_count > 0))
+        status = ST_DISCOVERY_CANNOT_DISCOVER;
       if (status EQUALS ST_OK)
       {
-        done = 0;
-        while (!done)
-        {
-          status = check_serial_input(ctx);
-          if ((status EQUALS ST_DISCOVERY_WHOLE_PACKET) ||
-            any_input_at_all))
-            status = ST_DISCOVERY_CANNOT_DISCOVER;
-          if (status EQUALS ST_OK)
-          {
-            if (time_expired(TIMER_DISCOVER_WAIT, &current_timer))
-              done = 1;
-          };
-          if (status != ST_OK)
-            done = 1;
-        };
+        if (time_expired(ctx, &TIMER_DISCOVER_WAIT, &current_timer))
+          done = 1;
+      };
+      if (status != ST_OK)
+        done = 1;
     };
+  };
 
-zzz send the discover command
-zzz if response do something with it
-zzz do set command
-zzz check for ack
+fprintf(stderr, "DEBUG: zzz send the discover command\n");
+//zzz if response do something with it
+//zzz do set command
+//zzz check for ack
 
 //        status = process_input_message(ctx);
-  };
 
   if (status != ST_OK)
   {
