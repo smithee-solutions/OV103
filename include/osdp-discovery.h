@@ -25,6 +25,11 @@ typedef struct __attribute__((packed)) osdp_message
   unsigned char payload_start;
 } OSDP_MESSAGE;
 
+typedef struct discovery_timer
+{
+  unsigned long timer;
+} DISCOVERY_TIMER;
+
 typedef struct osdp_discovery_context
 {
   int verbosity;
@@ -49,6 +54,8 @@ int length_valid(OSDP_DISCOVERY_CONTEXT *ctx, OSDP_MESSAGE *msg, int length_in_b
 unsigned char osdp_discovery_response(OSDP_MESSAGE *msg);
 int process_input_message(OSDP_DISCOVERY_CONTEXT *ctx);
 int read_settings(OSDP_DISCOVERY_CONTEXT *ctx);
+int setup_osdp_mfg_message(OSDP_DISCOVERY_CONTEXT *ctx, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
+int start_discovery_timer(OSDP_DISCOVERY_CONTEXT *ctx, DISCOVERY_TIMER *current_time);
 
 
 #define ST_OK (0)

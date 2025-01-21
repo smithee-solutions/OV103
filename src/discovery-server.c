@@ -9,10 +9,13 @@
 
 
 #include <osdp-discovery.h>
-#include <osdp-discovery-version.h>
+#include <discovery-protocol.h>
+#include <discovery-version.h>
 
 
 int initialize(OSDP_DISCOVERY_CONTEXT *ctx);
+
+unsigned char my_OUI [] = {0x0A, 0x00, 0x17};
 
 
 int main
@@ -21,6 +24,7 @@ int main
 
 { /* main for discovery-server */
 
+  DISCOVERY_TIMER current_time;
   OSDP_DISCOVERY_CONTEXT discovery_context;
   OSDP_DISCOVERY_CONTEXT *ctx;
   int done;
@@ -37,25 +41,37 @@ int main
     done = 1;
   if (status EQUALS ST_OK)
   {
+    // send 'start discover' and confirm nobody answers.
 
-zzz send initial discovery
-zzz watch the input.  if anything (check stats) then bail
+    status = setup_osdp_mfg_message(ctx, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
+    if (status EQUALS ST_OK)
+    {
+      status = start_discovery_timer(ctx, &current_time);
+      if (status EQUALS ST_OK)
+      {
+        done = 0;
+        while (!done)
+        {
+          status = check_serial_input(ctx);
+          if ((status EQUALS ST_DISCOVERY_WHOLE_PACKET) ||
+            any_input_at_all))
+            status = ST_DISCOVERY_CANNOT_DISCOVER;
+          if (status EQUALS ST_OK)
+          {
+            if (time_expired(TIMER_DISCOVER_WAIT, &current_timer))
+              done = 1;
+          };
+          if (status != ST_OK)
+            done = 1;
+        };
+    };
+
 zzz send the discover command
 zzz if response do something with it
 zzz do set command
 zzz check for ack
 
-    while (!done)
-    {
-      if (status EQUALS ST_OK)
-        status = check_serial_input(ctx);
-      if (status EQUALS ST_DISCOVERY_WHOLE_PACKET)
-      {
-        status = process_input_message(ctx);
-      };
-      if (status != ST_OK)
-        done = 1;
-    };
+//        status = process_input_message(ctx);
   };
 
   if (status != ST_OK)
