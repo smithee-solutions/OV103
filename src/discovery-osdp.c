@@ -24,18 +24,21 @@ int setup_osdp_mfg_message
 
 { /* setup_osdp_mfg_message */
 
+  int idx;
   unsigned char osdp_message_buffer [OSDP_MAX_MESSAGE_SIZE];
   int status;
 
 
   status = ST_OK;
   memset(osdp_message_buffer, 0, sizeof(osdp_message_buffer));
+  idx = 0;
+  osdp_message_buffer [idx] = OSDP_MESSAGE_START;
+  idx++;
+  osdp_message_buffer [idx] = OSDP_CONFIG_ADDRESS;
+  idx++;
+
 fprintf(stderr, "DEBUG: finish coding...\n"); status = -1;
 #if 0
-  set index to 0
-  add SOM at index
-  increment index
-  add CONFIG_ADDRESS as address
   if direction is PD add 0x80
   increment index
   calc length = som + command + 2length + ctl + command=mfg + 3OUI + mfg-command + detail length + 2

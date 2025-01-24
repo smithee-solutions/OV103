@@ -1,0 +1,6 @@
+{
+  "verbosity":"9",
+  "speed":"9600",
+  "device":"/dev/ttyUSB0"
+}
+
