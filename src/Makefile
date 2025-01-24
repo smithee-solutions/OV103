@@ -17,11 +17,16 @@ clean:
 discovery-client:	discovery-client.o Makefile
 	${LINK} -o discovery-client discovery-client.o ${LDFLAGS}
 
-discovery-server:	discovery-server.o discovery-utils.o osdp-crc.o Makefile
-	${LINK} -o discovery-server discovery-server.o discovery-utils.o osdp-crc.o ${LDFLAGS}
+discovery-server:	discovery-server.o \
+	  discovery-osdp.o discovery-utils.o osdp-crc.o Makefile
+	${LINK} -o discovery-server discovery-server.o \
+	  discovery-osdp.o discovery-utils.o osdp-crc.o ${LDFLAGS}
 
 discovery-server.o:	discovery-server.c
 	${CC} ${CFLAGS} discovery-server.c
+
+discovery-osdp.o:	discovery-osdp.c
+	${CC} ${CFLAGS} discovery-osdp.c
 
 discovery-utils.o:	discovery-utils.c
 	${CC} ${CFLAGS} discovery-utils.c

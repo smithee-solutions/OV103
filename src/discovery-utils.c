@@ -331,3 +331,30 @@ int read_settings
 
 } /* read_settings */
 
+
+int start_discovery_timer
+  (OSDP_DISCOVERY_CONTEXT *ctx,
+  DISCOVERY_TIMER *current_time)
+
+{ /* start_discovery_timer */
+
+  memset((void *)current_time, 0, sizeof(*current_time));
+  return(ST_OK);
+
+} /* start_discovery_timer */
+
+
+// returns 0 for not expired, 1 for expired
+
+int time_expired
+  (OSDP_DISCOVERY_CONTEXT *ctx,
+  DISCOVERY_TIMER *duration,
+  DISCOVERY_TIMER *current_timer)
+
+{
+fprintf(stderr, "DEBUG: if now-current time is duration beyond current_timer then return expired (1)\n");
+  return(0);
+}
+
+
+

@@ -44,7 +44,7 @@ int main
 
   // send 'start discover' and confirm nobody answers.
   if (status EQUALS ST_OK)
-    status = setup_osdp_mfg_message(ctx, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
+    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
 
   if (status EQUALS ST_OK)
     status = start_discovery_timer(ctx, &current_timer);

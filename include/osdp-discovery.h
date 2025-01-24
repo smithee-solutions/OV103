@@ -54,7 +54,7 @@ int length_valid(OSDP_DISCOVERY_CONTEXT *ctx, OSDP_MESSAGE *msg, int length_in_b
 unsigned char osdp_discovery_response(OSDP_MESSAGE *msg);
 int process_input_message(OSDP_DISCOVERY_CONTEXT *ctx);
 int read_settings(OSDP_DISCOVERY_CONTEXT *ctx);
-int setup_osdp_mfg_message(OSDP_DISCOVERY_CONTEXT *ctx, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
+int setup_osdp_mfg_message(OSDP_DISCOVERY_CONTEXT *ctx, int direction, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
 int start_discovery_timer(OSDP_DISCOVERY_CONTEXT *ctx, DISCOVERY_TIMER *current_time);
 int time_expired(OSDP_DISCOVERY_CONTEXT *ctx, DISCOVERY_TIMER *duration, DISCOVERY_TIMER *current_timer);
 
