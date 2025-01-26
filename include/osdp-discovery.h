@@ -39,7 +39,7 @@ typedef struct osdp_discovery_context
   FILE *log;
   struct termios tio;
   unsigned long timer_serial;
-  unsigned char buffer [OSDP_MAX_MESSAGE_SIZE];
+  unsigned char message_buffer [OSDP_MAX_MESSAGE_SIZE];
   int buf_idx;
   int spill_count;
   int overflows;

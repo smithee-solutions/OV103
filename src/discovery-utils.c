@@ -41,13 +41,13 @@ int add_octet_and_validate_buffer
 
 
   status = ST_OK;
-  msg = (OSDP_MESSAGE *)ctx->buffer;
+  msg = (OSDP_MESSAGE *)ctx->message_buffer;
 
   if (ctx->buf_idx < OSDP_MAX_MESSAGE_SIZE)
   {
     if (ctx->verbosity > 9)
       fprintf(stderr, "Adding %02X to index %03d.\n", wire_octet, ctx->buf_idx);
-    ctx->buffer [ctx->buf_idx] = wire_octet;
+    ctx->message_buffer [ctx->buf_idx] = wire_octet;
     ctx->buf_idx ++;
   }
   else
@@ -57,12 +57,12 @@ int add_octet_and_validate_buffer
     ctx->overflows++;
     status = ST_DISCOVERY_OVERFLOW;
   };
-  if (ctx->buffer [0] != OSDP_MESSAGE_START)
+  if (ctx->message_buffer [0] != OSDP_MESSAGE_START)
   {
     if (ctx->verbosity > 3)
-      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", ctx->buffer[0]);
+      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", ctx->message_buffer[0]);
     ctx->spill_count++;
-    memcpy(ctx->buffer, ctx->buffer+1, ctx->buf_idx-1);
+    memcpy(ctx->message_buffer, ctx->message_buffer+1, ctx->buf_idx-1);
     ctx->buf_idx = ctx->buf_idx - 1;
   }
   else
@@ -73,7 +73,7 @@ int add_octet_and_validate_buffer
       if ((msg->lth_hi*256 + msg->lth_lo) > OSDP_MAX_MESSAGE_SIZE)
       {
         offset = 3; // skip alleged count
-        memcpy(ctx->buffer, ctx->buffer+offset, ctx->buf_idx-offset);
+        memcpy(ctx->message_buffer, ctx->message_buffer+offset, ctx->buf_idx-offset);
         ctx->buf_idx = ctx->buf_idx - offset;
       };
       if (ctx->buf_idx > 3)
@@ -81,7 +81,7 @@ int add_octet_and_validate_buffer
         if (msg->address != 0)
         {
           offset = 4; // skip alleged address
-          memcpy(ctx->buffer, ctx->buffer+offset, ctx->buf_idx-offset);
+          memcpy(ctx->message_buffer, ctx->message_buffer+offset, ctx->buf_idx-offset);
           ctx->buf_idx = ctx->buf_idx - offset;
         }
         else
@@ -101,7 +101,7 @@ int add_octet_and_validate_buffer
 /*
   check_serial_input - check for and accept serial input
 
-  updates ctx->buffer, buf_idx if there was data.
+  updates ctx->message_buffer, buf_idx if there was data.
 */
 int check_serial_input
   (OSDP_DISCOVERY_CONTEXT *ctx)

@@ -50,7 +50,6 @@ int main
     status = start_discovery_timer(ctx, &current_timer);
   if (status EQUALS ST_OK)
   {
-    done = 0;
     while (!done)
     {
       status = check_serial_input(ctx);

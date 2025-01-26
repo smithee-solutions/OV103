@@ -14,6 +14,10 @@
 #include <discovery-protocol.h>
 
 
+/*
+  direction is OSDP_COMMAND if we're sending a command and OSDP_RESPONSE if we're sending a response.
+*/
+
 int setup_osdp_mfg_message
   (OSDP_DISCOVERY_CONTEXT *ctx,
   int direction,
@@ -25,6 +29,7 @@ int setup_osdp_mfg_message
 { /* setup_osdp_mfg_message */
 
   int idx;
+  int message_length;
   unsigned char osdp_message_buffer [OSDP_MAX_MESSAGE_SIZE];
   int status;
 
@@ -35,33 +40,45 @@ int setup_osdp_mfg_message
   osdp_message_buffer [idx] = OSDP_MESSAGE_START;
   idx++;
   osdp_message_buffer [idx] = OSDP_CONFIG_ADDRESS;
+  if (direction EQUALS OSDP_RESPONSE)
+  osdp_message_buffer [idx] = osdp_message_buffer [idx] | OSDP_RESPONSE;
   idx++;
+  message_length =
+    1 + // SOM
+    2 + // address
+    1 + // control
+    1 + //command
+    3 + // OUI
+    1 + // MFG command
+    2 + // detail length
+    2 + // CRC
+    detail_length;
+  osdp_message_buffer [idx] = 0xff & message_length;
+  osdp_message_buffer [idx+1] = (message_length >> 8);
+  idx = idx + 2;
+  osdp_message_buffer [idx] = OSDP_CRC; // sequence 0, crc packet
+  idx++;
+  if (direction EQUALS OSDP_COMMAND)
+    osdp_message_buffer [idx] = OSDP_COMMAND_MFG;
+  else
+    osdp_message_buffer [idx] = OSDP_RESPONSE_MFGREP;
+  idx++;
+  osdp_message_buffer [idx] = mfg_command;
+  idx++;
+  memcpy(osdp_message_buffer+idx, my_OUI, 3);
+  idx = idx + 3;
+  osdp_message_buffer [idx] = 0xff & detail_length;
+  osdp_message_buffer [idx+1] = (detail_length >> 8);
+  idx = idx + 2;
+  if (detail_length > 0)
+  {
+    memcpy(osdp_message_buffer+idx, detail, detail_length);
+    idx = idx + detail_length;
+  };
+  *(unsigned short int *)(osdp_message_buffer + idx) = fCrcBlk(osdp_message_buffer, message_length);
+  idx = idx + 2;
 
-fprintf(stderr, "DEBUG: finish coding...\n"); status = -1;
-#if 0
-  if direction is PD add 0x80
-  increment index
-  calc length = som + command + 2length + ctl + command=mfg + 3OUI + mfg-command + detail length + 2
-  add length
-  increment index by 2
-  add CTL, sequence 0, no SCS
-  increment index
-  if direction is ACU add MFG else add MFGREP
-  increment index
-  add mfg command
-  increment index
-  add OUI
-  increment by 3
-  calc internal length from detail length
-  add internal length
-  increment by 2
-  if details length > 0
-    add details
-    increment index by details length
-  calc crc 
-  increment index by 2
-  copy message buffer to context message buffer
-#endif
+  memcpy(ctx->message_buffer, osdp_message_buffer, message_length);
   return(status);
 }
 
