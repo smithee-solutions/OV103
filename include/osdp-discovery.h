@@ -6,6 +6,8 @@
 
 #define EQUALS ==
 
+#define LOG stdout
+
 #ifndef OSDP_COMMAND_POLL
 #include <osdp-protocol.h>
 #endif

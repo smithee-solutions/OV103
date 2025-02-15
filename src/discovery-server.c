@@ -35,7 +35,7 @@ int main
   ctx = &discovery_context;
   memset(ctx, 0, sizeof(&ctx));
   status = ST_OK;
-  fprintf(stdout, "OSDP Discovery Server (ACU) %s\n", OSDP_DISCOVERY_VERSION);
+  fprintf(LOG, "OSDP Discovery Server (ACU) %s\n", OSDP_DISCOVERY_VERSION);
   done = 0;
   status = initialize(ctx);
   if (status != ST_OK)
@@ -53,6 +53,9 @@ int main
     while (!done)
     {
       status = check_serial_input(ctx);
+ 
+      // any whole response or an issue means we cannot do discovery.
+
       if ((status EQUALS ST_DISCOVERY_WHOLE_PACKET) ||
         (ctx->buf_idx > 0) || (ctx->spill_count > 0))
         status = ST_DISCOVERY_CANNOT_DISCOVER;
@@ -65,8 +68,16 @@ int main
         done = 1;
     };
   };
-
+  if (status EQUALS ST_DISCOVERY_CANNOT_DISCOVER)
+  {
+    fprintf(LOG, "Problem issuing device discovery.\n");
+  };
+  if (status EQUALS ST_OK)
+  {
 fprintf(stderr, "DEBUG: zzz send the discover command\n");
+    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, OSDP_DISCO_CMD_DISCOVER, NULL, 0);
+  };
+
 //zzz if response do something with it
 //zzz do set command
 //zzz check for ack
@@ -75,7 +86,7 @@ fprintf(stderr, "DEBUG: zzz send the discover command\n");
 
   if (status != ST_OK)
   {
-    fprintf(stdout, "discovery-server exit status %d.\n", status);
+    fprintf(LOG, "discovery-server exit status %d.\n", status);
   };
   return(status);
 
@@ -101,15 +112,15 @@ int initialize
   ctx->timer_serial = 50000000;
   //ctx->timer_nsec = 999999999;
 
-  fprintf(stdout, "OSDP Discovery Server is in start-up.\n");
+  fprintf(LOG, "OSDP Discovery Server is in start-up.\n");
   status = read_settings(ctx);
 
   if (status EQUALS ST_OK)
   {
-    fprintf(stdout, "         Serial port: %s\n", ctx->device);
-//    fprintf(stdout, "Read wait timer (ns): %ld\n", ctx->timer_nsec);
-    fprintf(stdout, "                 Log: %s\n", "stderr");
-    fprintf(stdout, "           Verbosity: %d\n", ctx->verbosity);
+    fprintf(LOG, "         Serial port: %s\n", ctx->device);
+//    fprintf(LOG, "Read wait timer (ns): %ld\n", ctx->timer_nsec);
+    fprintf(LOG, "                 Log: %s\n", "stderr");
+    fprintf(LOG, "           Verbosity: %d\n", ctx->verbosity);
   };
 
   if (status EQUALS ST_OK)
@@ -143,11 +154,11 @@ int process_input_message
 
 
   status = ST_OK;
-  osdp_msg = (OSDP_MESSAGE *)(ctx->buffer);
+  osdp_msg = (OSDP_MESSAGE *)(ctx->message_buffer);
   length = ctx->buf_idx;
   if (ctx->verbosity > 3)
   {
-    fprintf(stdout, "Discovery Server input received %d octets\n", length);
+    fprintf(LOG, "Discovery Server input received %d octets\n", length);
   };
   dump_osdp_message(ctx, osdp_msg, length, "PD->ACU");
 
@@ -169,7 +180,7 @@ int process_input_message
     default:
       status = ST_DISCOVERY_UNK_PD_MSG;
       if (ctx->verbosity > 3)
-        fprintf(stdout, "Unknown response %02X received.\n", osdp_msg->command);
+        fprintf(LOG, "Unknown response %02X received.\n", osdp_msg->command);
       break;
     };
   };
