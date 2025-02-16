@@ -8,12 +8,12 @@
 #include <termios.h>
 
 
-#include <osdp-discovery.h>
+#include <discovery.h>
 #include <discovery-protocol.h>
 #include <discovery-version.h>
 
 
-int initialize(OSDP_DISCOVERY_CONTEXT *ctx);
+int initialize(DYNAD_CONTEXT *ctx);
 
 unsigned char my_OUI [] = {0x0A, 0x00, 0x17};
 DISCOVERY_TIMER TIMER_DISCOVER_WAIT = {1600L}; // milliseconds i.e. 8x poll time
@@ -26,8 +26,8 @@ int main
 { /* main for discovery-server */
 
   DISCOVERY_TIMER current_timer;
-  OSDP_DISCOVERY_CONTEXT discovery_context;
-  OSDP_DISCOVERY_CONTEXT *ctx;
+  DYNAD_CONTEXT discovery_context;
+  DYNAD_CONTEXT *ctx;
   int done;
   int status;
 
@@ -44,7 +44,7 @@ int main
 
   // send 'start discover' and confirm nobody answers.
   if (status EQUALS ST_OK)
-    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, OSDP_DISCO_CMD_START_DISCOVER, NULL, 0);
+    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, DYNAD_START_DISCOVER, NULL, 0);
 
   if (status EQUALS ST_OK)
     status = start_discovery_timer(ctx, &current_timer);
@@ -75,7 +75,7 @@ int main
   if (status EQUALS ST_OK)
   {
 fprintf(stderr, "DEBUG: zzz send the discover command\n");
-    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, OSDP_DISCO_CMD_DISCOVER, NULL, 0);
+    status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, DYNAD_DISCOVER, NULL, 0);
   };
 
 //zzz if response do something with it
@@ -94,7 +94,7 @@ fprintf(stderr, "DEBUG: zzz send the discover command\n");
 
 
 int initialize
-  (OSDP_DISCOVERY_CONTEXT *ctx)
+  (DYNAD_CONTEXT *ctx)
 {
   int status;
 
@@ -133,7 +133,7 @@ int initialize
 
 
 int process_input_message
-  (OSDP_DISCOVERY_CONTEXT *ctx)
+  (DYNAD_CONTEXT *ctx)
 
 { /* process_input_message */
 

@@ -1,5 +1,5 @@
 /*
-  osdp-discovery.h - definitions for OSDP discovery tools
+  discovery.h - definitions for OSDP discovery tools
   
   (C)2025 Smithee Solutions LLC
 */
@@ -32,9 +32,16 @@ typedef struct discovery_timer
   unsigned long timer;
 } DISCOVERY_TIMER;
 
-typedef struct osdp_discovery_context
+#define DYNAD_BACKOFF_INCREMENT (50*1000000L)
+
+#define DYNAD_STATE_UNDISCOVERED (1)
+
+typedef struct dynamic_address_context
 {
   int verbosity;
+
+  int discovery_state;
+
   int fd; // file descriptor for serial port
   char device [1024];
   char speed_s [1024];
@@ -45,20 +52,30 @@ typedef struct osdp_discovery_context
   int buf_idx;
   int spill_count;
   int overflows;
-} OSDP_DISCOVERY_CONTEXT;
+
+  // discovery protocol items
+  unsigned int random_backoff_count;  
+
+  // context for discovery client
+  unsigned char my_pd_address;
+
+  // message parsing
+  unsigned char message_address;
+  unsigned char message_command;
+} DYNAD_CONTEXT;
 
 
-int check_serial_input(OSDP_DISCOVERY_CONTEXT *ctx);
-void dump_osdp_message(OSDP_DISCOVERY_CONTEXT *ctx, OSDP_MESSAGE *msg, int lth, char *dir_tag);
+int check_serial_input(DYNAD_CONTEXT *ctx);
+void dump_osdp_message(DYNAD_CONTEXT *ctx, OSDP_MESSAGE *msg, int lth, char *dir_tag);
 unsigned short int fCrcBlk(unsigned char *pData, unsigned short int nLength);
-int initialize_serial_port(OSDP_DISCOVERY_CONTEXT *ctx);
-int length_valid(OSDP_DISCOVERY_CONTEXT *ctx, OSDP_MESSAGE *msg, int length_in_buffer);
+int initialize_serial_port(DYNAD_CONTEXT *ctx);
+int length_valid(DYNAD_CONTEXT *ctx, OSDP_MESSAGE *msg, int length_in_buffer);
 unsigned char osdp_discovery_response(OSDP_MESSAGE *msg);
-int process_input_message(OSDP_DISCOVERY_CONTEXT *ctx);
-int read_settings(OSDP_DISCOVERY_CONTEXT *ctx);
-int setup_osdp_mfg_message(OSDP_DISCOVERY_CONTEXT *ctx, int direction, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
-int start_discovery_timer(OSDP_DISCOVERY_CONTEXT *ctx, DISCOVERY_TIMER *current_time);
-int time_expired(OSDP_DISCOVERY_CONTEXT *ctx, DISCOVERY_TIMER *duration, DISCOVERY_TIMER *current_timer);
+int process_input_message(DYNAD_CONTEXT *ctx);
+int read_settings(DYNAD_CONTEXT *ctx);
+int setup_osdp_mfg_message(DYNAD_CONTEXT *ctx, int direction, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
+int start_discovery_timer(DYNAD_CONTEXT *ctx, DISCOVERY_TIMER *current_time);
+int time_expired(DYNAD_CONTEXT *ctx, DISCOVERY_TIMER *duration, DISCOVERY_TIMER *current_timer);
 
 
 #define ST_OK (0)

@@ -10,7 +10,7 @@
 #include <string.h>
 
 
-#include <osdp-discovery.h>
+#include <discovery.h>
 #include <discovery-protocol.h>
 
 
@@ -19,7 +19,7 @@
 */
 
 int setup_osdp_mfg_message
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   int direction,
   unsigned char *my_OUI,
   unsigned char mfg_command,

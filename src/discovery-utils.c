@@ -12,7 +12,7 @@
 #include <errno.h>
 
 
-#include <osdp-discovery.h>
+#include <discovery.h>
 #if 0
 #include <sys/types.h>
 #include <stdlib.h>
@@ -29,7 +29,7 @@
 
 
 int add_octet_and_validate_buffer
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   unsigned char wire_octet)
 
 { /* add_octet_and_validate_buffer */
@@ -104,7 +104,7 @@ int add_octet_and_validate_buffer
   updates ctx->message_buffer, buf_idx if there was data.
 */
 int check_serial_input
-  (OSDP_DISCOVERY_CONTEXT *ctx)
+  (DYNAD_CONTEXT *ctx)
 
 { /* check_serial_input */
 
@@ -168,7 +168,7 @@ int check_serial_input
   only dumps hex at verbosity 4 or higher.
 */
 void dump_osdp_message
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   OSDP_MESSAGE *msg, 
   int lth,
   char *dir_tag)
@@ -200,7 +200,7 @@ void dump_osdp_message
 
 
 int initialize_serial_port
-  (OSDP_DISCOVERY_CONTEXT *ctx)
+  (DYNAD_CONTEXT *ctx)
 
 { /* initialize_serial_port */
 
@@ -246,7 +246,7 @@ int initialize_serial_port
 
 
 int length_valid
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   OSDP_MESSAGE *msg,
   int length_in_buffer)
 {
@@ -292,7 +292,7 @@ unsigned char osdp_discovery_response
     verbosity - message detail level.  default is 3, debug is 9, silent is 0
 */
 int read_settings
-  (OSDP_DISCOVERY_CONTEXT *ctx)
+  (DYNAD_CONTEXT *ctx)
 
 { /* read_settings */
 
@@ -333,7 +333,7 @@ int read_settings
 
 
 int start_discovery_timer
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   DISCOVERY_TIMER *current_time)
 
 { /* start_discovery_timer */
@@ -347,7 +347,7 @@ int start_discovery_timer
 // returns 0 for not expired, 1 for expired
 
 int time_expired
-  (OSDP_DISCOVERY_CONTEXT *ctx,
+  (DYNAD_CONTEXT *ctx,
   DISCOVERY_TIMER *duration,
   DISCOVERY_TIMER *current_timer)
 
