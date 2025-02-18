@@ -16,17 +16,6 @@
 #define DISCOVERY_SETTINGS_FILENAME "discovery-settings.json"
 
 
-typedef struct __attribute__((packed)) osdp_message
-{
-  unsigned char msg_start;
-  unsigned char lth_hi;
-  unsigned char lth_lo;
-  unsigned char address;
-  unsigned char control;
-  unsigned char command;
-  unsigned char payload_start;
-} OSDP_MESSAGE;
-
 typedef struct discovery_timer
 {
   unsigned long timer;

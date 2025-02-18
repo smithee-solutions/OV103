@@ -14,8 +14,8 @@ all:	${PROGS}
 clean:
 	rm -f core *.o ${PROGS}
 
-discovery-client:	discovery-client.o Makefile
-	${LINK} -o discovery-client discovery-client.o ${LDFLAGS}
+discovery-client:	discovery-client.o discovery-utils.o Makefile
+	${LINK} -o discovery-client discovery-client.o discovery-utils.o ${LDFLAGS}
 
 discovery-server:	discovery-server.o \
 	  discovery-osdp.o discovery-utils.o osdp-crc.o Makefile
