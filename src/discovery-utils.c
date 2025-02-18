@@ -331,6 +331,20 @@ int read_settings
 
 } /* read_settings */
 
+ 
+int send_serial_data
+  (DYNAD_CONTEXT *ctx,
+  unsigned char *send_buffer,
+  int send_length)
+
+{ /* send_serial_data */
+
+  write (ctx->fd, send_buffer, send_length);
+
+  return(ST_OK);
+
+} /* send_serial_data */
+
 
 int start_discovery_timer
   (DYNAD_CONTEXT *ctx,

@@ -46,6 +46,8 @@ int main
   if (status EQUALS ST_OK)
     status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, DYNAD_START_DISCOVER, NULL, 0);
 
+zzz send message
+
   if (status EQUALS ST_OK)
     status = start_discovery_timer(ctx, &current_timer);
   if (status EQUALS ST_OK)
