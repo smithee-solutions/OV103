@@ -37,8 +37,12 @@ typedef struct dynamic_address_context
   FILE *log;
   struct termios tio;
   unsigned long timer_serial;
-  unsigned char message_buffer [OSDP_MAX_MESSAGE_SIZE];
-  int buf_idx;
+  unsigned char send_buffer [OSDP_MAX_MESSAGE_SIZE];
+  int send_buffer_length;
+  unsigned char receive_buffer [OSDP_MAX_MESSAGE_SIZE];
+  int receive_buffer_length;
+//  unsigned char message_buffer [OSDP_MAX_MESSAGE_SIZE];
+//  int buf_idx;
   int spill_count;
   int overflows;
 
@@ -62,6 +66,7 @@ int length_valid(DYNAD_CONTEXT *ctx, OSDP_MESSAGE *msg, int length_in_buffer);
 unsigned char osdp_discovery_response(OSDP_MESSAGE *msg);
 int process_input_message(DYNAD_CONTEXT *ctx);
 int read_settings(DYNAD_CONTEXT *ctx);
+int send_serial_data(DYNAD_CONTEXT *ctx, unsigned char *send_buffer, int send_length);
 int setup_osdp_mfg_message(DYNAD_CONTEXT *ctx, int direction, unsigned char *my_OUI, unsigned char mfg_command, unsigned char *detail, int detail_length);
 int start_discovery_timer(DYNAD_CONTEXT *ctx, DISCOVERY_TIMER *current_time);
 int time_expired(DYNAD_CONTEXT *ctx, DISCOVERY_TIMER *duration, DISCOVERY_TIMER *current_timer);

@@ -30,18 +30,17 @@ int setup_osdp_mfg_message
 
   int idx;
   int message_length;
-  unsigned char osdp_message_buffer [OSDP_MAX_MESSAGE_SIZE];
   int status;
 
 
   status = ST_OK;
-  memset(osdp_message_buffer, 0, sizeof(osdp_message_buffer));
+  memset(ctx->send_buffer, 0, sizeof(ctx->send_buffer));
   idx = 0;
-  osdp_message_buffer [idx] = OSDP_MESSAGE_START;
+  ctx->send_buffer [idx] = OSDP_MESSAGE_START;
   idx++;
-  osdp_message_buffer [idx] = OSDP_CONFIG_ADDRESS;
+  ctx->send_buffer [idx] = OSDP_CONFIG_ADDRESS;
   if (direction EQUALS OSDP_RESPONSE)
-  osdp_message_buffer [idx] = osdp_message_buffer [idx] | OSDP_RESPONSE;
+  ctx->send_buffer [idx] = ctx->send_buffer [idx] | OSDP_RESPONSE;
   idx++;
   message_length =
     1 + // SOM
@@ -53,32 +52,32 @@ int setup_osdp_mfg_message
     2 + // detail length
     2 + // CRC
     detail_length;
-  osdp_message_buffer [idx] = 0xff & message_length;
-  osdp_message_buffer [idx+1] = (message_length >> 8);
+  ctx->send_buffer [idx] = 0xff & message_length;
+  ctx->send_buffer [idx+1] = (message_length >> 8);
   idx = idx + 2;
-  osdp_message_buffer [idx] = OSDP_CRC; // sequence 0, crc packet
+  ctx->send_buffer [idx] = OSDP_CRC; // sequence 0, crc packet
   idx++;
   if (direction EQUALS OSDP_COMMAND)
-    osdp_message_buffer [idx] = OSDP_COMMAND_MFG;
+    ctx->send_buffer [idx] = OSDP_COMMAND_MFG;
   else
-    osdp_message_buffer [idx] = OSDP_RESPONSE_MFGREP;
+    ctx->send_buffer [idx] = OSDP_RESPONSE_MFGREP;
   idx++;
-  osdp_message_buffer [idx] = mfg_command;
+  ctx->send_buffer [idx] = mfg_command;
   idx++;
-  memcpy(osdp_message_buffer+idx, my_OUI, 3);
+  memcpy(ctx->send_buffer+idx, my_OUI, 3);
   idx = idx + 3;
-  osdp_message_buffer [idx] = 0xff & detail_length;
-  osdp_message_buffer [idx+1] = (detail_length >> 8);
+  ctx->send_buffer [idx] = 0xff & detail_length;
+  ctx->send_buffer [idx+1] = (detail_length >> 8);
   idx = idx + 2;
   if (detail_length > 0)
   {
-    memcpy(osdp_message_buffer+idx, detail, detail_length);
+    memcpy(ctx->send_buffer+idx, detail, detail_length);
     idx = idx + detail_length;
   };
-  *(unsigned short int *)(osdp_message_buffer + idx) = fCrcBlk(osdp_message_buffer, message_length);
+  *(unsigned short int *)(ctx->send_buffer + idx) = fCrcBlk(ctx->send_buffer, message_length);
   idx = idx + 2;
 
-  memcpy(ctx->message_buffer, osdp_message_buffer, message_length);
+  ctx->send_buffer_length = message_length;
   return(status);
 }
 

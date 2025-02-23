@@ -160,7 +160,7 @@ int process_server_command
 
   OSDP_MESSAGE *osdp_command;
 
-  osdp_command = (OSDP_MESSAGE *)(ctx->message_buffer);
+  osdp_command = (OSDP_MESSAGE *)(ctx->receive_buffer);
   ctx->message_address = osdp_command->address & 0x7F;
   return(ST_OK);
 

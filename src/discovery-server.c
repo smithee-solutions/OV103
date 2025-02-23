@@ -41,13 +41,11 @@ int main
   if (status != ST_OK)
     done = 1;
 
-
   // send 'start discover' and confirm nobody answers.
   if (status EQUALS ST_OK)
     status = setup_osdp_mfg_message(ctx, OSDP_COMMAND, my_OUI, DYNAD_START_DISCOVER, NULL, 0);
-
-zzz send message
-
+  if (status EQUALS ST_OK)
+    status = send_serial_data(ctx, ctx->send_buffer, ctx->send_buffer_length);
   if (status EQUALS ST_OK)
     status = start_discovery_timer(ctx, &current_timer);
   if (status EQUALS ST_OK)
@@ -59,7 +57,7 @@ zzz send message
       // any whole response or an issue means we cannot do discovery.
 
       if ((status EQUALS ST_DISCOVERY_WHOLE_PACKET) ||
-        (ctx->buf_idx > 0) || (ctx->spill_count > 0))
+        (ctx->receive_buffer_length > 0) || (ctx->spill_count > 0))
         status = ST_DISCOVERY_CANNOT_DISCOVER;
       if (status EQUALS ST_OK)
       {
@@ -156,8 +154,8 @@ int process_input_message
 
 
   status = ST_OK;
-  osdp_msg = (OSDP_MESSAGE *)(ctx->message_buffer);
-  length = ctx->buf_idx;
+  osdp_msg = (OSDP_MESSAGE *)(ctx->receive_buffer);
+  length = ctx->receive_buffer_length;
   if (ctx->verbosity > 3)
   {
     fprintf(LOG, "Discovery Server input received %d octets\n", length);
@@ -188,7 +186,7 @@ int process_input_message
   };
   if (status EQUALS ST_OK)
   {
-    ctx->buf_idx = 0;
+    ctx->receive_buffer_length = 0;
   };
   return(status);
 

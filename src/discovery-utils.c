@@ -41,52 +41,52 @@ int add_octet_and_validate_buffer
 
 
   status = ST_OK;
-  msg = (OSDP_MESSAGE *)ctx->message_buffer;
+  msg = (OSDP_MESSAGE *)ctx->send_buffer;
 
-  if (ctx->buf_idx < OSDP_MAX_MESSAGE_SIZE)
+  if (ctx->send_buffer_length < OSDP_MAX_MESSAGE_SIZE)
   {
     if (ctx->verbosity > 9)
-      fprintf(stderr, "Adding %02X to index %03d.\n", wire_octet, ctx->buf_idx);
-    ctx->message_buffer [ctx->buf_idx] = wire_octet;
-    ctx->buf_idx ++;
+      fprintf(stderr, "Adding %02X to index %03d.\n", wire_octet, ctx->send_buffer_length);
+    ctx->send_buffer [ctx->send_buffer_length] = wire_octet;
+    ctx->send_buffer_length ++;
   }
   else
   {
     fprintf(stderr, "input buffer overflow, dumping input.\n");
-    ctx->buf_idx = 0;
+    ctx->send_buffer_length = 0;
     ctx->overflows++;
     status = ST_DISCOVERY_OVERFLOW;
   };
-  if (ctx->message_buffer [0] != OSDP_MESSAGE_START)
+  if (ctx->send_buffer [0] != OSDP_MESSAGE_START)
   {
     if (ctx->verbosity > 3)
-      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", ctx->message_buffer[0]);
+      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", ctx->send_buffer[0]);
     ctx->spill_count++;
-    memcpy(ctx->message_buffer, ctx->message_buffer+1, ctx->buf_idx-1);
-    ctx->buf_idx = ctx->buf_idx - 1;
+    memcpy(ctx->send_buffer, ctx->send_buffer+1, ctx->send_buffer_length-1);
+    ctx->send_buffer_length = ctx->send_buffer_length - 1;
   }
   else
   {
-    if (ctx->buf_idx > 2)
+    if (ctx->send_buffer_length > 2)
     {
       header_reported_length = msg->lth_hi*256 + msg->lth_lo;
       if ((msg->lth_hi*256 + msg->lth_lo) > OSDP_MAX_MESSAGE_SIZE)
       {
         offset = 3; // skip alleged count
-        memcpy(ctx->message_buffer, ctx->message_buffer+offset, ctx->buf_idx-offset);
-        ctx->buf_idx = ctx->buf_idx - offset;
+        memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
+        ctx->send_buffer_length = ctx->send_buffer_length - offset;
       };
-      if (ctx->buf_idx > 3)
+      if (ctx->send_buffer_length > 3)
       {
         if (msg->address != 0)
         {
           offset = 4; // skip alleged address
-          memcpy(ctx->message_buffer, ctx->message_buffer+offset, ctx->buf_idx-offset);
-          ctx->buf_idx = ctx->buf_idx - offset;
+          memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
+          ctx->send_buffer_length = ctx->send_buffer_length - offset;
         }
         else
         {
-          if (header_reported_length EQUALS ctx->buf_idx)
+          if (header_reported_length EQUALS ctx->send_buffer_length)
             status = ST_DISCOVERY_WHOLE_PACKET;
         };
       };
