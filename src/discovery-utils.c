@@ -42,6 +42,8 @@ int add_octet_and_validate_buffer
 
   status = ST_OK;
   msg = (OSDP_MESSAGE *)ctx->send_buffer;
+  if (ctx->verbosity > 3)
+    fprintf(ctx->log, "send_buffer_length at top %d.\n", ctx->send_buffer_length);
 
   if (ctx->send_buffer_length < OSDP_MAX_MESSAGE_SIZE)
   {
@@ -70,7 +72,9 @@ int add_octet_and_validate_buffer
     if (ctx->send_buffer_length > 2)
     {
       header_reported_length = msg->lth_hi*256 + msg->lth_lo;
-      if ((msg->lth_hi*256 + msg->lth_lo) > OSDP_MAX_MESSAGE_SIZE)
+fprintf(stderr, "hi %02X lo %02x lth %d.\n",
+      msg->lth_hi,  msg->lth_lo, header_reported_length);
+      if (header_reported_length > OSDP_MAX_MESSAGE_SIZE)
       {
         offset = 3; // skip alleged count
         memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
@@ -78,7 +82,7 @@ int add_octet_and_validate_buffer
       };
       if (ctx->send_buffer_length > 3)
       {
-        if (msg->address != 0)
+        if (msg->address != OSDP_CONFIG_ADDRESS)
         {
           offset = 4; // skip alleged address
           memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
@@ -92,6 +96,9 @@ int add_octet_and_validate_buffer
       };
     };
   };
+
+  if (ctx->send_buffer_length > 2)
+    fprintf(stderr, "send lth now %d\n", ctx->send_buffer_length);
 
   return(status);
 

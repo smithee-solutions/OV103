@@ -41,6 +41,7 @@ int main
     ignore = 0;
     while (!done)
     {
+fprintf(stderr, "send index before check serial: %d\n", ctx->send_buffer_length);
       status = check_serial_input(ctx);
  
       if (status EQUALS ST_DISCOVERY_WHOLE_PACKET)

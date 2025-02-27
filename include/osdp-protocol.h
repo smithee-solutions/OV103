@@ -7,7 +7,7 @@
 
 #define OSDP_COMMAND         (0x00)
 #define OSDP_RESPONSE        (0x80)
-#define OSDP_CRC             (0x40)
+#define OSDP_CRC             (0x04)
 #define OSDP_RESPONSE_MFGREP (0x90)
 #define OSDP_COMMAND_MFG     (0x80)
 #define OSDP_MESSAGE_START  (0x53) // SOM
@@ -19,8 +19,8 @@ typedef struct __attribute__((packed)) osdp_message
 {
   unsigned char msg_start;
   unsigned char address;
-  unsigned char lth_hi;
   unsigned char lth_lo;
+  unsigned char lth_hi;
   unsigned char control;
   unsigned char command;
   unsigned char payload_start;

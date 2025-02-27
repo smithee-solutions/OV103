@@ -30,54 +30,47 @@ int setup_osdp_mfg_message
 
   int idx;
   int message_length;
+  unsigned char *mfg_payload;
   int status;
+  OSDP_MESSAGE *osdp_msg;
 
 
   status = ST_OK;
   memset(ctx->send_buffer, 0, sizeof(ctx->send_buffer));
-  idx = 0;
-  ctx->send_buffer [idx] = OSDP_MESSAGE_START;
-  idx++;
-  ctx->send_buffer [idx] = OSDP_CONFIG_ADDRESS;
+
+  osdp_msg = (OSDP_MESSAGE *)(ctx->send_buffer);
+  osdp_msg->msg_start = OSDP_MESSAGE_START;
+  osdp_msg->address = OSDP_CONFIG_ADDRESS;
   if (direction EQUALS OSDP_RESPONSE)
-  ctx->send_buffer [idx] = ctx->send_buffer [idx] | OSDP_RESPONSE;
-  idx++;
-  message_length =
-    1 + // SOM
-    2 + // address
-    1 + // control
-    1 + //command
-    3 + // OUI
-    1 + // MFG command
-    2 + // detail length
-    2 + // CRC
-    detail_length;
-  ctx->send_buffer [idx] = 0xff & message_length;
-  ctx->send_buffer [idx+1] = (message_length >> 8);
-  idx = idx + 2;
-  ctx->send_buffer [idx] = OSDP_CRC; // sequence 0, crc packet
-  idx++;
+    osdp_msg->address = osdp_msg->address | OSDP_RESPONSE;
+  message_length = sizeof(OSDP_MESSAGE) - 1 + 2 + 3 + 2 + 1 + detail_length;
+  osdp_msg->lth_lo = 0xff & message_length;
+  osdp_msg->lth_hi = (message_length >> 8);
+  osdp_msg->control = OSDP_CRC; // sequence 0, crc packet
   if (direction EQUALS OSDP_COMMAND)
-    ctx->send_buffer [idx] = OSDP_COMMAND_MFG;
+    osdp_msg->command = OSDP_COMMAND_MFG;
   else
-    ctx->send_buffer [idx] = OSDP_RESPONSE_MFGREP;
-  idx++;
-  ctx->send_buffer [idx] = mfg_command;
-  idx++;
-  memcpy(ctx->send_buffer+idx, my_OUI, 3);
+    osdp_msg->command = OSDP_RESPONSE_MFGREP;
+
+  idx = 0;
+  mfg_payload = &(osdp_msg->payload_start);
+  memcpy(mfg_payload, my_OUI, 3);
   idx = idx + 3;
-  ctx->send_buffer [idx] = 0xff & detail_length;
-  ctx->send_buffer [idx+1] = (detail_length >> 8);
-  idx = idx + 2;
+  *(mfg_payload+idx) = mfg_command;
+  idx++;
+  *(mfg_payload+idx) = 0xff & detail_length;
+  idx++;
+  *(mfg_payload+idx) = (detail_length > 8);
+  idx++;
   if (detail_length > 0)
   {
-    memcpy(ctx->send_buffer+idx, detail, detail_length);
+    memcpy(mfg_payload+idx, detail, detail_length);
     idx = idx + detail_length;
   };
-  *(unsigned short int *)(ctx->send_buffer + idx) = fCrcBlk(ctx->send_buffer, message_length);
-  idx = idx + 2;
+  *(unsigned short int *)(mfg_payload + idx) = fCrcBlk(ctx->send_buffer, message_length);
 
   ctx->send_buffer_length = message_length;
   return(status);
-}
+
+} /* setup_osdp_mfg_message */
 
