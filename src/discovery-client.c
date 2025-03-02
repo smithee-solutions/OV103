@@ -163,6 +163,7 @@ int process_server_command
 
   osdp_command = (OSDP_MESSAGE *)(ctx->receive_buffer);
   ctx->message_address = osdp_command->address & 0x7F;
+  ctx->message_command = *(&(osdp_command->payload_start) - 1 + 3);
   return(ST_OK);
 
 } /* process_server_command */
