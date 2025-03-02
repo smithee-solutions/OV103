@@ -30,7 +30,9 @@
 
 int add_octet_and_validate_buffer
   (DYNAD_CONTEXT *ctx,
-  unsigned char wire_octet)
+  unsigned char wire_octet,
+  unsigned char *buffer,
+  int *buffer_index)
 
 { /* add_octet_and_validate_buffer */
 
@@ -38,62 +40,62 @@ int add_octet_and_validate_buffer
   OSDP_MESSAGE *msg;
   int offset;
   int status;
+  int valid;
 
 
   status = ST_OK;
-  msg = (OSDP_MESSAGE *)ctx->send_buffer;
+  valid = 1;
+  msg = (OSDP_MESSAGE *)buffer;
   if (ctx->verbosity > 3)
-    fprintf(ctx->log, "send_buffer_length at top %d.\n", ctx->send_buffer_length);
+    fprintf(ctx->log, "buffer_length at top %d.\n", *buffer_index);
 
-  if (ctx->send_buffer_length < OSDP_MAX_MESSAGE_SIZE)
+  if (*buffer_index < OSDP_MAX_MESSAGE_SIZE)
   {
     if (ctx->verbosity > 9)
-      fprintf(stderr, "Adding %02X to index %03d.\n", wire_octet, ctx->send_buffer_length);
-    ctx->send_buffer [ctx->send_buffer_length] = wire_octet;
-    ctx->send_buffer_length ++;
+      fprintf(stderr, "Adding %02X to index %03d.\n", wire_octet, *buffer_index);
+    buffer [*buffer_index] = wire_octet;
+    (*buffer_index) ++;
   }
   else
   {
+    valid = 0;
     fprintf(stderr, "input buffer overflow, dumping input.\n");
-    ctx->send_buffer_length = 0;
+    *buffer_index = 0;
     ctx->overflows++;
     status = ST_DISCOVERY_OVERFLOW;
   };
-  if (ctx->send_buffer [0] != OSDP_MESSAGE_START)
+  if (*buffer != OSDP_MESSAGE_START)
   {
+    valid = 0;
     if (ctx->verbosity > 3)
-      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", ctx->send_buffer[0]);
+      fprintf(stderr, "DEBUG: dumping first octet (%02X)\n", buffer[0]);
     ctx->spill_count++;
-    memcpy(ctx->send_buffer, ctx->send_buffer+1, ctx->send_buffer_length-1);
-    ctx->send_buffer_length = ctx->send_buffer_length - 1;
-  }
-  else
+    memcpy(buffer, buffer+1, *buffer_index-1);
+    *buffer_index = *buffer_index - 1;
+  };
+  if (valid)
   {
-    if (ctx->send_buffer_length > 2)
+    if (*buffer_index > 2)
     {
       header_reported_length = msg->lth_hi*256 + msg->lth_lo;
-fprintf(stderr, "hi %02X lo %02x lth %d.\n",
-      msg->lth_hi,  msg->lth_lo, header_reported_length);
+      if (ctx->verbosity > 9)
+        fprintf(LOG, "hi %02X lo %02x lth %d.\n",
+          msg->lth_hi,  msg->lth_lo, header_reported_length);
       if (header_reported_length > OSDP_MAX_MESSAGE_SIZE)
       {
+        valid = 0;
         offset = 3; // skip alleged count
-        memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
-        ctx->send_buffer_length = ctx->send_buffer_length - offset;
+        memcpy(buffer, buffer+offset, *buffer_index+offset);
+        *buffer_index = *buffer_index - offset;
       };
-      if (ctx->send_buffer_length > 3)
-      {
-        if (msg->address != OSDP_CONFIG_ADDRESS)
-        {
-          offset = 4; // skip alleged address
-          memcpy(ctx->send_buffer, ctx->send_buffer+offset, ctx->send_buffer_length-offset);
-          ctx->send_buffer_length = ctx->send_buffer_length - offset;
-        }
-        else
-        {
-          if (header_reported_length EQUALS ctx->send_buffer_length)
-            status = ST_DISCOVERY_WHOLE_PACKET;
-        };
-      };
+    };
+  };
+  if (valid)
+  {
+    if (*buffer_index > 3)
+    {
+      if (header_reported_length EQUALS *buffer_index)
+        status = ST_DISCOVERY_WHOLE_PACKET;
     };
   };
 
@@ -155,7 +157,8 @@ int check_serial_input
       }
       else
       {
-        status = add_octet_and_validate_buffer(ctx, wire_octet [0]);
+        status = add_octet_and_validate_buffer(ctx, wire_octet [0],
+          ctx->receive_buffer, &(ctx->receive_buffer_length));
       };
     };
   }

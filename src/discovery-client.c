@@ -41,7 +41,9 @@ int main
     ignore = 0;
     while (!done)
     {
-fprintf(stderr, "send index before check serial: %d\n", ctx->send_buffer_length);
+      if (ctx->verbosity > 9)
+        fprintf(LOG,
+          "send index before check serial: %d\n", ctx->send_buffer_length);
       status = check_serial_input(ctx);
  
       if (status EQUALS ST_DISCOVERY_WHOLE_PACKET)
@@ -87,6 +89,7 @@ fprintf(LOG, "output config here.\n");
             status = ST_OK;
           };
         };
+        ctx->receive_buffer_length = 0; //empty the buffer
       };
 
       if (ignore)
@@ -163,7 +166,7 @@ int process_server_command
 
   osdp_command = (OSDP_MESSAGE *)(ctx->receive_buffer);
   ctx->message_address = osdp_command->address & 0x7F;
-  ctx->message_command = *(&(osdp_command->payload_start) - 1 + 3);
+  ctx->message_command = *(&(osdp_command->payload_start) + 3);
   return(ST_OK);
 
 } /* process_server_command */
