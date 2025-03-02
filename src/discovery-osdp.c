@@ -67,7 +67,7 @@ int setup_osdp_mfg_message
     memcpy(mfg_payload+idx, detail, detail_length);
     idx = idx + detail_length;
   };
-  *(unsigned short int *)(mfg_payload + idx) = fCrcBlk(ctx->send_buffer, message_length);
+  *(unsigned short int *)(mfg_payload + idx) = fCrcBlk(ctx->send_buffer, message_length - 2);
 
   ctx->send_buffer_length = message_length;
   return(status);
